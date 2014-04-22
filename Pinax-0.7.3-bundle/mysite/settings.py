@@ -187,6 +187,10 @@ INSTALLED_APPS = (
     
     'django.contrib.admin',
 
+    #min
+    'compass_tweets',
+#    'south',
+
 )
 
 ABSOLUTE_URL_OVERRIDES = {
