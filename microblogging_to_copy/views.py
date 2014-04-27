@@ -7,8 +7,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
-from microblogging.utils import twitter_account_for_user, twitter_verify_credentials
-from microblogging.models import Tweet, TweetInstance, Following
+from microblogging.utils import twitter_account_for_user, twitter_verify_credentials # not using this
+from microblogging.models import Tweet, TweetInstance, Following 
 from microblogging.forms import TweetForm
 
 if "notification" in settings.INSTALLED_APPS:
@@ -41,7 +41,7 @@ def personal(request, form_class=TweetForm,
         if reply:
             form.fields['text'].initial = u"@%s " % reply
     tweets = TweetInstance.objects.tweets_for(request.user).order_by("-sent")
-    return render_to_response(template_name, {
+    return render_to_response(template_name, {   #combines a given template with a given context dictionary and returns an HttpResponse object with the rendered text
         "form": form,
         "reply": reply,
         "tweets": tweets,

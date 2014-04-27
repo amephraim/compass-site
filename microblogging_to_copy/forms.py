@@ -6,7 +6,7 @@ try:
 except ImportError:
     notification = None
 
-class TweetForm(forms.ModelForm):
+class TweetForm(forms.ModelForm): # inherits from the ModelForm class
     
     text = forms.CharField(label='',
         widget=forms.Textarea(attrs={
@@ -17,14 +17,14 @@ class TweetForm(forms.ModelForm):
     
     class Meta:
         model = Tweet
-        exclude = ('sender_type', 'sender_id', 'sent')
+        exclude = ('sender_type', 'sender_id', 'sent') # list of fields to be excluded in the form
         
     def __init__(self, user=None, *args, **kwargs):
-        self.user = user
-        super(TweetForm, self).__init__(*args, **kwargs)
+        self.user = user # get user here!
+        super(TweetForm, self).__init__(*args, **kwargs) #creates an object of type ModelForm. inheritance basically.
 
     def clean_text(self):
-        return self.cleaned_data['text'].strip()
+        return self.cleaned_data['text'].strip() #assuming this is an inherited function
 
     def save(self):
         text = self.cleaned_data["text"]

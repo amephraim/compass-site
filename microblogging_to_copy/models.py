@@ -1,13 +1,13 @@
-from datetime import datetime
+from datetime import datetime #get the data and time, now
 
-from django.db import models
-from django.db.models.signals import post_save
+from django.db import models  #to define models. duh.
+from django.db.models.signals import post_save 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from django.contrib.auth.models import User
 
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.models import ContentType #tracks all the models installed in the project. 
 from django.contrib.contenttypes import generic
 
 try:
@@ -20,18 +20,19 @@ except ImportError:
 
 # @@@ need to make @ and # handling more abstract
 
-import re
-reply_re = re.compile("^@(\w+)")
-    
+import re # for regular expressions
+reply_re = re.compile("^@(\w+)") # to handle @.....
+
+#defining the Tweet model
 class Tweet(models.Model):
     """
     a single tweet from a user
     """
     
     text = models.CharField(_('text'), max_length=140)
-    sender_type = models.ForeignKey(ContentType)
+    sender_type = models.ForeignKey(ContentType)  # important. https://docs.djangoproject.com/en/dev/ref/contrib/contenttypes/
     sender_id = models.PositiveIntegerField()
-    sender = generic.GenericForeignKey('sender_type', 'sender_id')
+    sender = generic.GenericForeignKey('sender_type', 'sender_id') # wrap two fields in the model together to define a foreign key. Goes along with the content type
     sent = models.DateTimeField(_('sent'), default=datetime.now)
     
     def __unicode__(self):
@@ -39,15 +40,15 @@ class Tweet(models.Model):
     
     def get_absolute_url(self):
         return ("single_tweet", [self.id])
-    get_absolute_url = models.permalink(get_absolute_url)
+    get_absolute_url = models.permalink(get_absolute_url)   #used to get the actual url. Better way these days is to use reverse. get_absolute_url is used in templates.
 
-    class Meta:
-        ordering = ('-sent',)
+    class Meta:  #provide optional metadata about your model
+        ordering = ('-sent',)  #specify the ordering to use when listing your objects, "-" indicates descending order
 
 
 class TweetInstanceManager(models.Manager):
     
-    def tweets_for(self, recipient):
+    def tweets_for(self, recipient): #Returns the list of tweets for a given recipient
         recipient_type = ContentType.objects.get_for_model(recipient)
         return TweetInstance.objects.filter(recipient_type=recipient_type, recipient_id=recipient.id)
 
@@ -146,4 +147,4 @@ class Following(models.Model):
     
     objects = FollowingManager()
 
-post_save.connect(tweet, sender=Tweet)
+post_save.connect(tweet, sender=Tweet)  # ???
