@@ -7,21 +7,21 @@ class Context(models.Model):
     name = models.CharField(max_length=50)
     owner_type = models.ForeignKey(ContentType)
     owner_id = models.PositiveIntegerField()
-    owner = generic.GenericForeignKey('sender_type', 'sender_id')
+    owner = generic.GenericForeignKey('owner_type', 'owner_id')
 
     def __unicode__(self):
         return u"%s" % (self.name)    
 
 class Type(models.Model):
-	context = models.ForeignKey(Context, related_name = 'type_context')
+	context = models.ForeignKey(Context, related_name = 'type')
 	name = models.CharField(max_length=50)
         
 class Role(models.Model):
-    context = models.ForeignKey(Context, related_name = 'rol_context')
+    context = models.ForeignKey(Context, related_name = 'role_context') 
     name = models.CharField(max_length=50)
 
 class Rule(models.Model):
-	context = models.ForeignKey(Context)
+	context = models.ForeignKey(Context, related_name = 'rule')
 	message_type = models.ForeignKey(Type,related_name='rule_type')
 	sender_role = models.ForeignKey(Role, related_name='sender_name')
 	receiver_role = models.ForeignKey(Role, related_name='receiver_name')
