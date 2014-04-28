@@ -19,6 +19,7 @@ def add_context(request,template_name = "compass_tweets/editcontext.html"):
 		if form.is_valid():
 			print request.POST
 			context = form.save(commit=False)
+			print context
 			print request.user
 			type_formset = TypeFormSet(request.POST, instance = context)
 			role_formset = RoleFormSet(request.POST, instance = context)
@@ -28,7 +29,7 @@ def add_context(request,template_name = "compass_tweets/editcontext.html"):
 				type_formset.save()
 				role_formset.save()
 				rule_formset.save()
-				return HttpResponseRedirect('Entry made')
+				return HttpResponse('Entry made')
 	else:
 		form = ContextForm()
 		type_formset = TypeFormSet(instance = Context())
