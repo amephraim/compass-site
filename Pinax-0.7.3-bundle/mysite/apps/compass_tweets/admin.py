@@ -18,7 +18,10 @@ class ContextAdmin(admin.ModelAdmin):
 	fields = ['name']
 	inlines = [TypeInline,RoleInline,RuleInline]
 
-admin.site.register(Context,ContextAdmin)
+admin.site.register(Type)
+admin.site.register(Context)
+admin.site.register(Role)
+admin.site.register(Rule)
 admin.site.register(CTweet)
 admin.site.register(ContextMember)
 

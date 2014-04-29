@@ -10,7 +10,6 @@ from blog.feeds import BlogFeedAll, BlogFeedUser
 from bookmarks.feeds import BookmarkFeed
 from microblogging.feeds import TweetFeedAll, TweetFeedUser, TweetFeedUserWithFriends
 
-
 tweets_feed_dict = {"feed_dict": {
     'all': TweetFeedAll,
     'only': TweetFeedUser,
@@ -71,6 +70,7 @@ urlpatterns = patterns('',
 )
 
 ## @@@ for now, we'll use friends_app to glue this stuff together
+
 
 from photos.models import Image
 
