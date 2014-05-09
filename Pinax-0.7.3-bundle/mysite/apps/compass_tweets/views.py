@@ -26,7 +26,9 @@ def add_context(request,template_name = "compass_tweets/editcontext.html"):
 				context = form.save(commit=False)
 				context.save()
 				form.save_m2m()
+				print "saved"
 			else :
+				print "didn't save"
 				form = ContextForm(prefix="context")
 				
 		elif request.POST['action'] == 'type':
@@ -37,14 +39,14 @@ def add_context(request,template_name = "compass_tweets/editcontext.html"):
 			typeform=TypeForm(prefix="type")
 				
 		elif request.POST['action'] == 'role':
-			roleform=RoleFormSet(request.POST, prefix = "role")
+			roleform=RoleForm(request.POST, prefix = "role")
 			if roleform.is_valid():
 				roleform.save()
 			else:
 				roleform=RoleForm(prefix="role")
 		
 		elif request.POST['action'] == 'rule':
-			ruleform=RoleForm(request.POST, prefix = "rule")
+			ruleform=RuleForm(request.POST, prefix = "rule")
 			if ruleform.is_valid():
 				ruleform.save()
 				print "saved rulefomr"

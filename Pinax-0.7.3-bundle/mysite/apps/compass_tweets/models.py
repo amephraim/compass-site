@@ -19,7 +19,7 @@ class Rule(models.Model):
 	sender_role = models.ForeignKey(Role, related_name='sender_name')
 	receiver_role = models.ForeignKey(Role, related_name='receiver_name')
 	def __unicode__(self):
-		return u"Sender %s Receiver %s Type %s" % (self.sender_role,self.reciever_role,self.message_type)
+		return u"Sender %s Receiver %s Type %s" % (self.sender_role,self.receiver_role,self.message_type)
 		
 class Context(models.Model):
     name = models.CharField(max_length=50)
