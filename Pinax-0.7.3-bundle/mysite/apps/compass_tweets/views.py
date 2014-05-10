@@ -14,46 +14,44 @@ else:
     notification = None
 
 def add_context(request,template_name = "compass_tweets/editcontext.html"):
-	form = ContextForm(prefix="context")
+	form = ContextForm(prefix="form")
 	typeform=TypeForm(prefix="type")
 	roleform=RoleForm(prefix="role")
 	ruleform=RuleForm(prefix="rule")
 	if request.POST:
-		
+
 		if request.POST['action'] == 'context':
+			print "\n\n\n"
+			print request.user
 			form = ContextForm(request.user,request.POST, prefix="form")
 			if form.is_valid():
 				context = form.save(commit=False)
 				context.save()
 				form.save_m2m()
-				print "saved"
 			else :
-				print "didn't save"
-				form = ContextForm(prefix="context")
-				
+				form = ContextForm(prefix="form")
+
 		elif request.POST['action'] == 'type':
 			typeform=TypeForm(request.POST, prefix = "type")
 			if typeform.is_valid():
 				typeform.save()
-			
+
 			typeform=TypeForm(prefix="type")
-				
+
 		elif request.POST['action'] == 'role':
 			roleform=RoleForm(request.POST, prefix = "role")
 			if roleform.is_valid():
 				roleform.save()
 			else:
 				roleform=RoleForm(prefix="role")
-		
+
 		elif request.POST['action'] == 'rule':
 			ruleform=RuleForm(request.POST, prefix = "rule")
 			if ruleform.is_valid():
 				ruleform.save()
-				print "saved rulefomr"
 			else:
 				ruleform=RuleForm(prefix="rule")
-				print "didn't save"
-		
+
 	return render_to_response(template_name,{"form": form ,"typeform":typeform,"roleform":roleform,"ruleform":ruleform,})
 
 def friends(request, template_name = "compass_tweets/friends.html"):
