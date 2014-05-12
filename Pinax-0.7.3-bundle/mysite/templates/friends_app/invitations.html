@@ -49,9 +49,21 @@
                             <p>From <a href="{% url profile_detail invitation.from_user.username %}">{{ invitation.from_user }}</a>
                                 ({{ invitation.sent }}):</p>
                             <p class="invitation_message">{{ invitation.message }}</p>
+			    
+			   
+			     
+			   
+
                             <form method="post" action="">
                                 <input type="hidden" name="invitation" value="{{ invitation.id }}"/>
                                 <input type="hidden" name="action" value="accept"/>
+				Friend Type:<select name="friend_type">
+ 						 <option value="pf">Professional Friend</option>
+  						 <option value="acq">Acquaintance</option>
+  						<option value="cf">Close Friend</option>
+  						<option value="f">Friend</option>
+  						<option value="bf">Blocked Friend</option>
+					</select>
                                 <input type="submit" value="{% trans 'accept' %}" />
                             </form>
                             <form method="post" action="">
