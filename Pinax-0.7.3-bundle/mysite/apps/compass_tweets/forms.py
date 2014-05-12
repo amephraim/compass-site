@@ -1,5 +1,5 @@
 from django import forms
-from compass_tweets.models import Context, Role, Type, Rule
+from compass_tweets.models import Context, Role, Type, Rule, ContextMember
 from django.forms.models import inlineformset_factory, modelformset_factory
 
 try:
@@ -37,7 +37,8 @@ class ContextForm(forms.ModelForm):
 		if commit:
 			new_context.save()
 		return new_context
-
+		
+ContextMemberFormSet = modelformset_factory(ContextMember,fields=('member', 'role'),extra = 10)
 
 
 
