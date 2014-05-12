@@ -64,9 +64,7 @@ def contextfriend_set_for(user):
 
 
 class ContextMember(models.Model):
-	member_type = models.ForeignKey(ContentType)
-	member_id = models.PositiveIntegerField()
-	member = generic.GenericForeignKey('member_type', 'member_id')
+	member = models.ForeignKey(User)
 	context = models.ForeignKey(Context,related_name='memberContext')
 	role = models.ForeignKey(Role, related_name='memberRole')
 
