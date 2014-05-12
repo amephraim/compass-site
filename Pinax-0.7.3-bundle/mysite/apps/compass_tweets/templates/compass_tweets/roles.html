@@ -1,0 +1,19 @@
+<h> <b>My Roles</b></h>
+
+<br>
+<br>
+<br>
+<table>
+	<thead> 
+		<th>Context</th>
+		<th>Role</th>
+	</thead>
+	<tbody>
+		{% for cr in contextroles %}
+		<tr>
+			<td> {{ cr.0 }} </td>
+			<td> {{ cr.1 }} </td>
+		</tr>
+		 {% endfor %}
+	</tbody>
+</table>
