@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django import forms
-from django.forms.models import modelformset_factory
+from django.forms.models import formset_factory
 
 if "notification" in settings.INSTALLED_APPS:
     from notification import models as notification
@@ -75,23 +75,30 @@ def add_rules(request, template_name="compass_tweets/add_rules.html"):
 		raise Http404
 	context = request.session['context']
 	RuleForm = make_rule_form(context)
-	RuleFormSet = modelformset_factory(Rule, form=RuleForm, extra =10)
+	RuleFormSet = formset_factory(form=RuleForm, extra =10)
 	if request.POST:
 		print "ok"
-		ruleformset=RuleFormSet(request.POST, prefix='rules',queryset=Rule.objects.none())
+		ruleformset=RuleFormSet(request.POST, prefix='rules')
 		print "mistake"
 		print ruleformset.data
 		if ruleformset.is_valid():
 			print "here"
-			rules = ruleformset.save()
-			for rule in rules:
-				context.rules.add(rule)
+			#rules = ruleformset.save()
+			for rf in ruleformset.forms:
+				if not rf.cleaned_data.get('message_type') == None: #terrible hack, please correct
+					message = rf.cleaned_data.get('message_type')
+					sender = rf.cleaned_data.get('sender_role')
+					receiver = rf.cleaned_data.get('receiver_role')
+					rule, created = Rule.objects.get_or_create(message_type=message,sender_role=sender,receiver_role=receiver)
+					if not created:
+						rule.save()
+					context.rules.add(rule)
 			return HttpResponseRedirect(reverse('add_members'))
 		else:
 			return HttpResponse(ruleformset.errors)
 			
 	else:
-		ruleformset=RuleFormSet(queryset=Rule.objects.none(), prefix='rules')
+		ruleformset=RuleFormSet(prefix='rules')
 		return render_to_response(template_name,{"ruleformset":ruleformset,"contextname":context.name})
 
 

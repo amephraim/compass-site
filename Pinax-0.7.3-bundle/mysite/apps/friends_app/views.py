@@ -17,11 +17,16 @@ def friends(request, form_class=JoinRequestForm,
         template_name="friends_app/invitations.html"):
     if request.method == "POST":
         invitation_id = request.POST.get("invitation", None)
+	
         if request.POST["action"] == "accept":
+	    print "printing to type",request.POST["friend_type"]
             try:
                 invitation = FriendshipInvitation.objects.get(id=invitation_id)
+		
                 if invitation.to_user == request.user:
-                    invitation.accept()
+                    invitation.to_type=request.POST["friend_type"]
+		    invitation.save()
+		    invitation.accept()
                     request.user.message_set.create(message=_("Accepted friendship request from %(from_user)s") % {'from_user': invitation.from_user})
             except FriendshipInvitation.DoesNotExist:
                 pass
