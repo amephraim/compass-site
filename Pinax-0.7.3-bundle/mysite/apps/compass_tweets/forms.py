@@ -1,6 +1,6 @@
 from django import forms
 from compass_tweets.models import Context, Role, Type, Rule, ContextMember
-from django.forms.models import inlineformset_factory, modelformset_factory
+from django.forms.models import modelformset_factory
 
 try:
 	from notification import models as notification
@@ -16,16 +16,16 @@ class TypeForm(forms.ModelForm):
 class RoleForm(forms.ModelForm):
 	class Meta :
 		model = Role
-
+'''
 class RuleForm(forms.ModelForm):
 	class Meta :
 		model = Rule
-		
+'''		
 class ContextForm(forms.ModelForm):
 	
 	class Meta :
 		model = Context
-		exclude = ('owner_type','owner_id','owner')
+		exclude = ('owner_type','owner_id','owner','rules')
 		
 	def __init__(self, user=None, *args, **kwargs):
 		self.user = user # get user here!
