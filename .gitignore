@@ -1,4 +1,4 @@
 *.pyc
 bootstrap_pinax/
 dev.db
-
+*~
