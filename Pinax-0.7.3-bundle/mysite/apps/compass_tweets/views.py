@@ -10,6 +10,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django import forms
 from django.forms.models import formset_factory
+from django.contrib.auth.models import User
 
 if "notification" in settings.INSTALLED_APPS:
     from notification import models as notification
@@ -20,9 +21,7 @@ def add_context(request,template_name = "compass_tweets/editcontext.html"):
 	form = ContextForm(prefix="form")
 	typeform=TypeForm(prefix="type")
 	roleform=RoleForm(prefix="role")
-	#ruleform=RuleForm(prefix="rule")
 	if request.POST:
-
 		if request.POST['action'] == 'context':
 			form = ContextForm(request.user,request.POST, prefix="form")
 			if form.is_valid():
@@ -32,9 +31,6 @@ def add_context(request,template_name = "compass_tweets/editcontext.html"):
 				request.session['context'] = context
 				
 				return HttpResponseRedirect(reverse('add_rules'))
-				#return HttpResponseRedirect("compass_tweets/add_members.html",{"contextmemberformset": contextmemberformset, "context":context})
-				#return HttpResponseRedirect(reverse('add_members', kwargs={'context':context})
-				#return render(request,t.render(c),{"context": context,"contextmemberformset": contextmemberformset})
 			else :
 				form = ContextForm(prefix="form") 
 
@@ -51,14 +47,6 @@ def add_context(request,template_name = "compass_tweets/editcontext.html"):
 				roleform.save()
 			else:
 				roleform=RoleForm(prefix="role")
-
-	#	elif request.POST['action'] == 'rule':
-	#		ruleform=RuleForm(request.POST, prefix = "rule")
-	#		if ruleform.is_valid():
-	#			ruleform.save()
-	#		else:
-	#			ruleform=RuleForm(prefix="rule")
-
 	return render_to_response(template_name,{"form": form ,"typeform":typeform,"roleform":roleform,#"ruleform":ruleform,
 	})
 
@@ -77,13 +65,9 @@ def add_rules(request, template_name="compass_tweets/add_rules.html"):
 	RuleForm = make_rule_form(context)
 	RuleFormSet = formset_factory(form=RuleForm, extra =10)
 	if request.POST:
-		print "ok"
 		ruleformset=RuleFormSet(request.POST, prefix='rules')
-		print "mistake"
 		print ruleformset.data
 		if ruleformset.is_valid():
-			print "here"
-			#rules = ruleformset.save()
 			for rf in ruleformset.forms:
 				if not rf.cleaned_data.get('message_type') == None: #terrible hack, please correct
 					message = rf.cleaned_data.get('message_type')
@@ -101,25 +85,36 @@ def add_rules(request, template_name="compass_tweets/add_rules.html"):
 		ruleformset=RuleFormSet(prefix='rules')
 		return render_to_response(template_name,{"ruleformset":ruleformset,"contextname":context.name})
 
+def make_member_form(context):
+	class MemberForm(forms.Form):
+		member = forms.ModelChoiceField(queryset=User.objects.all())
+		role = forms.ModelChoiceField(context.roles)
+	return MemberForm
 
 def add_members(request, template_name="compass_tweets/add_members.html"):
 	if not 'context' in request.session:
 		raise Http404
-	context = request.session['context']
-	if request.POST:
-		contextmemberformset = ContextMemberFormSet(request.POST, prefix='members',queryset=ContextMember.objects.none())
+	newcontext = request.session['context']
+	MemberForm = make_member_form(newcontext)
+	MemberFormSet = formset_factory(form=MemberForm, extra =10)
+	if request.POST:	
+		contextmemberformset = MemberFormSet(request.POST, prefix='members')
 		if contextmemberformset.is_valid():
-			members = contextmemberformset.save(commit=False)
-			for member in members:
-				member.context = context
-				member.save()
+			for mf in contextmemberformset.forms:
+				if not mf.cleaned_data.get('member') == None:
+					newmember = mf.cleaned_data.get('member')
+					newrole = mf.cleaned_data.get('role')
+					memberrole, created = ContextMember.objects.get_or_create(member=newmember,role = newrole,context=newcontext)
+					if not created:
+						memberrole.save()
+					
 			del request.session['context']
-			return HttpResponse("Context successfully populated!!")
+			return HttpResponseRedirect(reverse('index'))
 		else:
 			return HttpResponse(contextmemberformset.errors)
 	else:
-		contextmemberformset = ContextMemberFormSet(queryset=ContextMember.objects.none(), prefix='members')
-		return render_to_response(template_name,{"contextmemberformset":contextmemberformset, "contextname":context.name})
+		contextmemberformset = MemberFormSet(prefix='members')
+		return render_to_response(template_name,{"contextmemberformset":contextmemberformset, "contextname":newcontext.name})
 
 def roles(request, template_name="compass_tweets/roles.html"):
 	user = request.user
