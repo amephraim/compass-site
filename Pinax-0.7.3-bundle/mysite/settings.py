@@ -184,11 +184,11 @@ INSTALLED_APPS = (
     'tag_app',
     'topics',
     'groups',
-    
+    'compass_tweets',
     'django.contrib.admin',
 
     #min
-    'compass_tweets',
+ 
 #    'south',
 
 )

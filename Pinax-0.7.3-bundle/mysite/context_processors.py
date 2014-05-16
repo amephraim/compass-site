@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.models import User
-
+from compass_tweets.models import Context
 from microblogging.models import Tweet
 from tribes.models import Tribe
 from bookmarks.models import Bookmark
