@@ -1,4 +1,4 @@
 *.pyc
 bootstrap_pinax/
-Pinax-0.7.3-bundle/pinax_env/
+dev.db
 
