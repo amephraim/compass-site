@@ -5,12 +5,12 @@ from django.contrib.contenttypes import generic
 
 
 class Type(models.Model):
-	name = models.CharField(max_length=50, verbose_name='type_name')
+	name = models.CharField(max_length=50, verbose_name='type_name', primary_key=True)
 	def __unicode__(self):
 		return u"%s" % (self.name) 
 
 class Role(models.Model): 
-    name = models.CharField(max_length=50,verbose_name='role_name')
+    name = models.CharField(max_length=50,verbose_name='role_name',primary_key=True)
     def __unicode__(self):
 		return u"%s" % (self.name)
 		
@@ -18,11 +18,15 @@ class Rule(models.Model):
 	message_type = models.ForeignKey(Type,related_name='message_type')
 	sender_role = models.ForeignKey(Role, related_name='sender_name')
 	receiver_role = models.ForeignKey(Role, related_name='receiver_name')
+	
+	class Meta:
+		unique_together = ("message_type", "sender_role", "receiver_role")
+	
 	def __unicode__(self):
 		return u"Sender %s Receiver %s Type %s" % (self.sender_role,self.receiver_role,self.message_type)
 		
 class Context(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, primary_key=True)
     types = models.ManyToManyField(Type)
     roles = models.ManyToManyField(Role)
     rules = models.ManyToManyField(Rule)
@@ -67,6 +71,8 @@ class ContextMember(models.Model):
 	member = models.ForeignKey(User)
 	context = models.ForeignKey(Context,related_name='memberContext')
 	role = models.ForeignKey(Role, related_name='memberRole')
+	class Meta:
+		unique_together = ("member", "context", "role")
 
 def createContextInImage(contextTemplate, contextname, user):
 	context_instance = Context.objects.create(name = contextname, owner=user)

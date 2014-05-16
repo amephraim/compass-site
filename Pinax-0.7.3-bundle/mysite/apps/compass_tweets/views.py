@@ -2,12 +2,14 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext,loader
 from compass_tweets.models import Context,Type, Role, Rule, ContextMember
-from compass_tweets.forms import ContextForm, TypeForm, RoleForm,RuleForm
+from compass_tweets.forms import ContextForm, TypeForm, RoleForm
 from compass_tweets.forms import ContextMemberFormSet
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
+from django import forms
+from django.forms.models import formset_factory
 
 if "notification" in settings.INSTALLED_APPS:
     from notification import models as notification
@@ -18,7 +20,7 @@ def add_context(request,template_name = "compass_tweets/editcontext.html"):
 	form = ContextForm(prefix="form")
 	typeform=TypeForm(prefix="type")
 	roleform=RoleForm(prefix="role")
-	ruleform=RuleForm(prefix="rule")
+	#ruleform=RuleForm(prefix="rule")
 	if request.POST:
 
 		if request.POST['action'] == 'context':
@@ -29,7 +31,7 @@ def add_context(request,template_name = "compass_tweets/editcontext.html"):
 				form.save_m2m()
 				request.session['context'] = context
 				
-				return HttpResponseRedirect(reverse('add_members'))
+				return HttpResponseRedirect(reverse('add_rules'))
 				#return HttpResponseRedirect("compass_tweets/add_members.html",{"contextmemberformset": contextmemberformset, "context":context})
 				#return HttpResponseRedirect(reverse('add_members', kwargs={'context':context})
 				#return render(request,t.render(c),{"context": context,"contextmemberformset": contextmemberformset})
@@ -50,14 +52,55 @@ def add_context(request,template_name = "compass_tweets/editcontext.html"):
 			else:
 				roleform=RoleForm(prefix="role")
 
-		elif request.POST['action'] == 'rule':
-			ruleform=RuleForm(request.POST, prefix = "rule")
-			if ruleform.is_valid():
-				ruleform.save()
-			else:
-				ruleform=RuleForm(prefix="rule")
+	#	elif request.POST['action'] == 'rule':
+	#		ruleform=RuleForm(request.POST, prefix = "rule")
+	#		if ruleform.is_valid():
+	#			ruleform.save()
+	#		else:
+	#			ruleform=RuleForm(prefix="rule")
 
-	return render_to_response(template_name,{"form": form ,"typeform":typeform,"roleform":roleform,"ruleform":ruleform,})
+	return render_to_response(template_name,{"form": form ,"typeform":typeform,"roleform":roleform,#"ruleform":ruleform,
+	})
+
+def make_rule_form(context):
+	class RuleForm(forms.Form):
+		message_type = forms.ModelChoiceField(context.types)
+		sender_role = forms.ModelChoiceField(context.roles)
+		receiver_role = forms.ModelChoiceField(context.roles)
+	return RuleForm
+
+
+def add_rules(request, template_name="compass_tweets/add_rules.html"):
+	if not 'context' in request.session:
+		raise Http404
+	context = request.session['context']
+	RuleForm = make_rule_form(context)
+	RuleFormSet = formset_factory(form=RuleForm, extra =10)
+	if request.POST:
+		print "ok"
+		ruleformset=RuleFormSet(request.POST, prefix='rules')
+		print "mistake"
+		print ruleformset.data
+		if ruleformset.is_valid():
+			print "here"
+			#rules = ruleformset.save()
+			for rf in ruleformset.forms:
+				if not rf.cleaned_data.get('message_type') == None: #terrible hack, please correct
+					message = rf.cleaned_data.get('message_type')
+					sender = rf.cleaned_data.get('sender_role')
+					receiver = rf.cleaned_data.get('receiver_role')
+					rule, created = Rule.objects.get_or_create(message_type=message,sender_role=sender,receiver_role=receiver)
+					if not created:
+						rule.save()
+					context.rules.add(rule)
+			return HttpResponseRedirect(reverse('add_members'))
+		else:
+			return HttpResponse(ruleformset.errors)
+			
+	else:
+		ruleformset=RuleFormSet(prefix='rules')
+		return render_to_response(template_name,{"ruleformset":ruleformset,"contextname":context.name})
+
 
 def add_members(request, template_name="compass_tweets/add_members.html"):
 	if not 'context' in request.session:
@@ -65,7 +108,6 @@ def add_members(request, template_name="compass_tweets/add_members.html"):
 	context = request.session['context']
 	if request.POST:
 		contextmemberformset = ContextMemberFormSet(request.POST, prefix='members',queryset=ContextMember.objects.none())
-		print contextmemberformset.data
 		if contextmemberformset.is_valid():
 			members = contextmemberformset.save(commit=False)
 			for member in members:
@@ -81,14 +123,11 @@ def add_members(request, template_name="compass_tweets/add_members.html"):
 
 def roles(request, template_name="compass_tweets/roles.html"):
 	user = request.user
-	print user
 	if user ==None:
 		raise Http404
 	contextroles=ContextMember.objects.filter(member=user)
 	contexts = [u.context.name for u in contextroles]
 	roles = [u.role.name for u in contextroles]
-	print contexts
-	print roles
 	crs = zip(contexts,roles)
 	return render_to_response(template_name,{"contextroles":crs})
 

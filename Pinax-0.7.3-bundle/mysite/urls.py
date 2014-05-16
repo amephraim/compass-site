@@ -52,7 +52,8 @@ urlpatterns = patterns('',
     (r'^announcements/', include('announcements.urls')),
     (r'^tweets/', include('microblogging.urls')),
     (r'^tribes/', include('tribes.urls')),
-    (r'^comments/', include('threadedcomments.urls')),
+	(r'^compass_tweets/', include('compass_tweets.urls')),    
+	(r'^comments/', include('threadedcomments.urls')),
     (r'^robots.txt$', include('robots.urls')),
     (r'^i18n/', include('django.conf.urls.i18n')),
     (r'^bookmarks/', include('bookmarks.urls')),
@@ -66,7 +67,7 @@ urlpatterns = patterns('',
     (r'^feeds/tweets/(.*)/$', 'django.contrib.syndication.views.feed', tweets_feed_dict),
     (r'^feeds/posts/(.*)/$', 'django.contrib.syndication.views.feed', blogs_feed_dict),
     (r'^feeds/bookmarks/(.*)/?$', 'django.contrib.syndication.views.feed', bookmarks_feed_dict),
-    (r'^compass_tweets/', include('compass_tweets.urls')),
+    
 )
 
 ## @@@ for now, we'll use friends_app to glue this stuff together
@@ -108,6 +109,7 @@ urlpatterns += patterns('',
     url('^blog/friends_blogs/$', 'friends_app.views.friends_objects', kwargs=friends_blogs_kwargs, name="friends_blogs"),
     url('^tweets/friends_tweets/$', 'friends_app.views.friends_objects', kwargs=friends_tweets_kwargs, name="friends_tweets"),
     url('^bookmarks/friends_bookmarks/$', 'friends_app.views.friends_objects', kwargs=friends_bookmarks_kwargs, name="friends_bookmarks"),
+
 )
 
 if settings.SERVE_MEDIA:
