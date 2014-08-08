@@ -1,0 +1,47 @@
+
+{% load i18n %}
+{% load uni_form %}
+{% load humanize %}
+{% load pagination_tags %}
+{% load order_by %}
+{% load extra_tagging_tags %}
+{% load context_tags %}
+{% load sorting_tags %}
+
+{% block head_title %}{% blocktrans %}Context Templates {% endblocktrans %}{% endblock %}
+
+{% block body %}
+    <h1>{% trans "Context Templates" %}</h1>
+    
+    <p>{% trans " <b>Context Templates</b> are all avilable templates of contexts that you can use while creating tribes." %}</p>
+    {% if user.is_authenticated %}
+        <p><a href="{% url add_context %}">Create</a> your own template.</p>
+    {% else %}
+        {% url acct_signup as signup_url %}
+        {% url acct_login as login_url %}
+        <p>{% blocktrans %}<a href="{{ signup_url }}">Sign up</a> and <a href="{{ login_url }}">log in </a> to create your own template or join an existing one.{% endblocktrans %}</p>
+    {% endif %}
+    
+    <form method="GET" action="">
+        <input type="text" name="search" value="{{ search_terms }}" />
+        <input type="submit" value="Search" />
+        {% if search_terms %}
+            <a href="{% clear_search_url request %}">Clear Search Terms</a>
+        {% endif %}
+    </form>
+    {% autosort ContextTemplates %}
+    {% autopaginate ContextTemplates 10 %}
+    {% if ContextTemplates %}
+        <p>{% trans "Order by:" %}
+            {% anchor name Name %}
+            {% anchor created Date %}
+        </p>
+        <dl>
+        {% for c in ContextTemplates %}
+            {% show_context c %}
+        {% endfor %}
+        </dl>
+        {% paginate %}
+    {% endif %}
+    
+{% endblock %}

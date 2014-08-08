@@ -1,8 +1,8 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext,loader
-from compass_tweets.models import Context,Type, Role, Rule, ContextMember
-from compass_tweets.forms import ContextForm, TypeForm, RoleForm
+from compass_tweets.models import Context,Type, Role, Rule, ContextMember, ContextInstance
+from compass_tweets.forms import ContextForm, TypeForm, RoleForm, ContextInstanceForm
 from compass_tweets.forms import ContextMemberFormSet
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -11,11 +11,30 @@ from django.contrib.auth.models import User
 from django import forms
 from django.forms.models import formset_factory
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.utils.datastructures import SortedDict
+from django.utils.translation import ugettext as _
 
 if "notification" in settings.INSTALLED_APPS:
     from notification import models as notification
 else:
     notification = None
+def all_contexts(request, template_name="compass_tweets/allContexts.html"):
+    
+    contxts = Context.objects.all()
+    
+    search_terms = request.GET.get('search', '')
+    if search_terms:
+        contxts = (contxts.filter(name__icontains=search_terms))
+    
+    content_type = ContentType.objects.get_for_model(Context)
+    contxts = contxts.extra(select=SortedDict(), select_params=(content_type.id,))
+    
+    return render_to_response(template_name, {
+        'ContextTemplates': contxts,
+        'search_terms': search_terms,
+    }, context_instance=RequestContext(request))
+
 
 def add_context(request,template_name = "compass_tweets/editcontext.html"):
 	form = ContextForm(prefix="form")
@@ -29,7 +48,7 @@ def add_context(request,template_name = "compass_tweets/editcontext.html"):
 				context.save()
 				form.save_m2m()
 				request.session['context'] = context
-				
+					
 				return HttpResponseRedirect(reverse('add_rules'))
 			else :
 				form = ContextForm(prefix="form") 
@@ -77,7 +96,8 @@ def add_rules(request, template_name="compass_tweets/add_rules.html"):
 					if not created:
 						rule.save()
 					context.rules.add(rule)
-			return HttpResponseRedirect(reverse('add_members'))
+			return HttpResponseRedirect(context.get_absolute_url())
+			#return HttpResponseRedirect(reverse('add_contextinstance'))
 		else:
 			return HttpResponse(ruleformset.errors)
 			
@@ -85,10 +105,38 @@ def add_rules(request, template_name="compass_tweets/add_rules.html"):
 		ruleformset=RuleFormSet(prefix='rules')
 		return render_to_response(template_name,{"ruleformset":ruleformset,"contextname":context.name})
 
+def contextdetails(request,group_name=None,template_name="compass_tweets/contextdetails.html"):
+	context = get_object_or_404(Context, name=group_name)
+	print context.rules
+	return render_to_response((template_name),{"context":context}, context_instance=RequestContext(request))	
+
+def add_contextInstance(request, template_name="compass_tweets/instance.html"):
+	'''if not 'context' in request.session:
+		raise Http404
+	newcontext = request.session['context']'''
+	instanceform = ContextInstanceForm(prefix="instanceform")
+	if request.POST:
+		'''if request.POST['action'] == 'context':'''
+		instanceform = ContextInstanceForm(request.user,request.POST, prefix="instanceform")
+		if instanceform.is_valid():
+			contextinstance = instanceform.save(commit=False)
+			contextinstance.save()
+			instanceform.save_m2m()
+			request.session['context']=contextinstance 
+				
+			return HttpResponseRedirect(reverse('add_members'))
+		else :
+			print " doesnt wokr"				
+			instanceform = ContextInstanceForm(prefix="instanceform")
+	
+
+	return render_to_response(template_name,
+{"instanceform": instanceform,})
+
 def make_member_form(context):
 	class MemberForm(forms.Form):
 		member = forms.ModelChoiceField(queryset=User.objects.all())
-		role = forms.ModelChoiceField(context.roles)
+		role = forms.ModelChoiceField(context.ContextType.roles)
 	return MemberForm
 
 def add_members(request, template_name="compass_tweets/add_members.html"):

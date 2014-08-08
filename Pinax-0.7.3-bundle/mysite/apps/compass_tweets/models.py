@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType 
 from django.contrib.contenttypes import generic
-
+from django.core.urlresolvers import reverse
 
 class Type(models.Model):
 	name = models.CharField(max_length=50, verbose_name='type_name', primary_key=True)
@@ -13,6 +13,7 @@ class Role(models.Model):
     name = models.CharField(max_length=50,verbose_name='role_name',primary_key=True)
     def __unicode__(self):
 		return u"%s" % (self.name)
+    
 		
 class Rule(models.Model):
 	message_type = models.ForeignKey(Type,related_name='message_type')
@@ -23,7 +24,7 @@ class Rule(models.Model):
 		unique_together = ("message_type", "sender_role", "receiver_role")
 	
 	def __unicode__(self):
-		return u"Sender %s Receiver %s Type %s" % (self.sender_role,self.receiver_role,self.message_type)
+		return u"Sender: %s Receiver: %s Type: %s" % (self.sender_role,self.receiver_role,self.message_type)
 		
 class Context(models.Model):
     name = models.CharField(max_length=50, primary_key=True)
@@ -33,17 +34,29 @@ class Context(models.Model):
     owner_type = models.ForeignKey(ContentType)
     owner_id = models.PositiveIntegerField()
     owner = generic.GenericForeignKey('owner_type', 'owner_id')
-
+    def get_absolute_url(self):
+        return reverse('context_detail', kwargs={'group_name': self.name})
+    
+    def get_url_kwargs(self):
+        return {'group_name': self.name}
     def __unicode__(self):
         return u"%s" % (self.name)    
 
-	
+class ContextInstance(models.Model):
+	name = models.CharField(max_length=50,primary_key=True)
+	ContextType = models.ForeignKey(Context,related_name='ContextType')
+	owner_type = models.ForeignKey(ContentType)
+    	owner_id = models.PositiveIntegerField()
+    	owner = generic.GenericForeignKey('owner_type', 'owner_id')
+	def __unicode__(self):
+        	return u"%s" % (self.name) 
+
 class CTweet(models.Model):
 	message = models.CharField(max_length=500)
 	sender = models.CharField(max_length = 50)
 	receiver = models.CharField(max_length = 50)
 	message_type = models.ForeignKey(Type,related_name ='cTweet_type')
-	context = models.ForeignKey(Context,related_name='cTweetContext')
+	context = models.ForeignKey(ContextInstance,related_name='cTweetContext')
 	subject = models.CharField(max_length = 50)
 
 class ContextFriendshipManager(models.Manager):
@@ -69,13 +82,13 @@ def contextfriend_set_for(user):
 
 class ContextMember(models.Model):
 	member = models.ForeignKey(User)
-	context = models.ForeignKey(Context,related_name='memberContext')
+	context = models.ForeignKey(ContextInstance,related_name='memberContext')
 	role = models.ForeignKey(Role, related_name='memberRole')
 	class Meta:
 		unique_together = ("member", "context", "role")
 
 def createContextInImage(contextTemplate, contextname, user):
-	context_instance = Context.objects.create(name = contextname, owner=user)
+	context_instance = ContextInstance.objects.create(name = contextname, owner=user)
 	for role in Role.objects.filter(context=contextTemplate):
 		role_instance = Role.objects.create(context=context_instance, name=role.name)
 	for messagetype in Type.objects.filter(context=contextTemplate):

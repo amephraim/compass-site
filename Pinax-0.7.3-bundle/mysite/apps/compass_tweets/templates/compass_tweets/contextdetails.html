@@ -1,0 +1,25 @@
+{% load i18n %}
+{% load uni_form %}
+{% load wiki_tags %}
+{% load avatar_tags %}
+{% load threadedcommentstags %}
+{% load pagination_tags %}
+{% load extra_tagging_tags %}
+{% load tribes_tags %}
+{% load group_tags %}
+{% load topics_tags %}
+{% load photo_tags %}
+{% load theme_tags %}
+
+
+{% block body %}
+ <h1>{% trans "Context Template: " %} {{ context.name }}</h1>
+        
+        <p>
+            <h2>{% trans "Roles:" %}</h2> <tt>{% for role in context.roles.all %}{{ role }}<br /></tt> {% endfor %}
+           
+        </p>
+	<p>
+	    <h2>{% trans "Rules:" %}</h2> <tt>{% for rule in context.rules.all %}{{ rule }}<br /></tt> {% endfor %}
+	</p>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from compass_tweets.models import Context,Type,Role,Rule,CTweet,ContextMember
+from compass_tweets.models import Context,Type,Role,Rule,CTweet,ContextMember,ContextInstance
 
 class TypeInline(admin.StackedInline):
 	model = Type
@@ -20,8 +20,8 @@ class ContextAdmin(admin.ModelAdmin):
 
 admin.site.register(Type)
 admin.site.register(Context)
+admin.site.register(ContextInstance)
 admin.site.register(Role)
 admin.site.register(Rule)
 admin.site.register(CTweet)
 admin.site.register(ContextMember)
-

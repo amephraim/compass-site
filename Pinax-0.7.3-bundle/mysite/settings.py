@@ -4,7 +4,9 @@
 import os.path
 import posixpath
 import pinax
-
+from os.path import dirname,join,abspath
+#PINAX_ROOT = abspath(join(dirname(__file__), "../../"))
+#PROJECT_ROOT = abspath(dirname(__file__))
 PINAX_ROOT = os.path.abspath(os.path.dirname(pinax.__file__))
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
@@ -24,7 +26,7 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'sqlite3'    # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-DATABASE_NAME = 'dev.db'       # Or path to database file if using sqlite3.
+DATABASE_NAME = '/home/ruchtan/Documents/Networks/finalone/compass-site/Pinax-0.7.3-bundle/mysite/dev.db'       # Or path to database file if using sqlite3.
 DATABASE_USER = ''             # Not used with sqlite3.
 DATABASE_PASSWORD = ''         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
